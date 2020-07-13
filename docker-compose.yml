@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  db:
+    image: mongo:latest
+    volumes:
+      - mongo:/data/db
+    ports:
+      - 27017:27017
+    env_file:
+      - .env
+    networks:
+      - guru
+
+  app:
+    build:
+      context: ./
+    ports:
+      - 80:8080
+    networks:
+      - guru
+    depends_on:
+      - db
+
+volumes:
+  mongo:
+    driver: local
+
+networks:
+  guru:

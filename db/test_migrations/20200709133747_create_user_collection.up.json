@@ -1,0 +1,12 @@
+[
+  {
+    "create": "user"
+  },
+  {
+    "insert": "user",
+    "documents": [
+      {"id": 1, "balance": 50, "token": "sssss"},
+      {"id": 2, "balance": 75, "token": "ddddd"}
+    ]
+  }
+]

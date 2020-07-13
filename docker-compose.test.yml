@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  test_db:
+    image: mongo:latest
+    volumes:
+      - mongo_test:/data/test_db
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongo
+      MONGO_INITDB_ROOT_PASSWORD: mongo
+      MONGO_INITDB_DATABASE: test_guru
+
+volumes:
+  mongo_test:
+    driver: local

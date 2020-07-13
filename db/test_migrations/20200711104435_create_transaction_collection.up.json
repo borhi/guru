@@ -1,0 +1,13 @@
+[
+  {
+    "create": "transaction"
+  },
+  {
+    "insert": "transaction",
+    "documents": [
+      {"id": 1, "user_id": 1, "amount": 50, "type": "Bet", "balance_before": 100, "balance_after": 50, "created_at": "2020-07-11 08:57:06.982346 +0000 UTC"},
+      {"id": 2, "user_id": 2, "amount": 25, "type": "Bet", "balance_before": 50, "balance_after": 25, "created_at": "2020-07-11 08:57:06.982346 +0000 UTC"},
+      {"id": 3, "user_id": 2, "amount": 50, "type": "Win", "balance_before": 25, "balance_after": 75, "created_at": "2020-07-11 09:57:06.982346 +0000 UTC"}
+    ]
+  }
+]

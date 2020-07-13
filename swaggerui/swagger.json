@@ -1,0 +1,290 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1",
+    "title": "Guru Bet API"
+  },
+  "schemes": [
+    "http"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/user/create": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "description": "Create user",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "400": {
+            "description": "BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "InternalServerError"
+          }
+        }
+      }
+    },
+    "/user/get": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "description": "Get user",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/GetUserRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/GetUserResponse"
+            }
+          },
+          "400": {
+            "description": "BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "NotFound",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "InternalServerError"
+          }
+        }
+      }
+    },
+    "/user/deposit": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "description": "Add deposit",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/DepositRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/TransactionResponse"
+            }
+          },
+          "400": {
+            "description": "BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "NotFound",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "InternalServerError",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/transaction": {
+      "post": {
+        "tags": [
+          "Transaction"
+        ],
+        "description": "Add transaction",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/TransactionRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/TransactionResponse"
+            }
+          },
+          "400": {
+            "description": "BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "NotFound",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "InternalServerError",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        }
+      }
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "balance": {
+          "type": "number"
+        },
+        "token": {
+          "type": "string"
+        }
+      }
+    },
+    "GetUserRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "token": {
+          "type": "string"
+        }
+      }
+    },
+    "GetUserResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "balance": {
+          "type": "number"
+        },
+        "deposit_count": {
+          "type": "integer"
+        },
+        "deposit_sum": {
+          "type": "number"
+        },
+        "bet_count": {
+          "type": "integer"
+        },
+        "bet_sum": {
+          "type": "number"
+        },
+        "win_count": {
+          "type": "integer"
+        },
+        "win_sum": {
+          "type": "number"
+        }
+      }
+    },
+    "DepositRequest": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "integer"
+        },
+        "deposit_id": {
+          "type": "integer"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "token": {
+          "type": "string"
+        }
+      }
+    },
+    "TransactionResponse": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "balance": {
+          "type": "number"
+        }
+      }
+    },
+    "TransactionRequest": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "integer"
+        },
+        "transaction_id": {
+          "type": "integer"
+        },
+        "type": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "token": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

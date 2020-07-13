@@ -1,0 +1,6 @@
+.DS_Store
+.idea/
+vendor/
+.env
+create_user_data.txt
+get_user_data.txt
