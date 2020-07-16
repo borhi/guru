@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"go.uber.org/zap"
 	"guru/models"
@@ -17,10 +18,11 @@ type UserService struct {
 	UserRepository        repositories.UserRepository
 	DepositRepository     repositories.DepositRepository
 	TransactionRepository repositories.TransactionRepository
+	Ticker                *time.Ticker
 	sync.Mutex
 }
 
-func (s *UserService) Run() {
+func (s *UserService) Run(ctx context.Context) {
 	users := make(map[uint64]*models.UserModel)
 	if err := s.UserRepository.FindAll(users); err != nil {
 		zap.L().Fatal(err.Error())
@@ -47,6 +49,9 @@ func (s *UserService) Run() {
 	}
 	s.Statistic = statistic
 	s.startTicker()
+
+	<-ctx.Done()
+	s.stopTicker()
 }
 
 func (s *UserService) GetUser(id uint64, token string) (*models.GetUserResponseModel, error) {
@@ -192,14 +197,20 @@ func (s *UserService) saveTransaction(transactionRequest models.TransactionReque
 }
 
 func (s *UserService) startTicker() {
-	ticker := time.NewTicker(10 * time.Second)
 	go func() {
-		for range ticker.C {
+		for range s.Ticker.C {
 			if err := s.saveUser(); err != nil {
 				zap.L().Error(err.Error())
 			}
 		}
 	}()
+}
+
+func (s *UserService) stopTicker() {
+	s.Ticker.Stop()
+	if err := s.saveUser(); err != nil {
+		zap.L().Error(err.Error())
+	}
 }
 
 func (s *UserService) saveUser() error {

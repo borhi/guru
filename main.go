@@ -12,6 +12,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 func init() {
@@ -71,14 +74,23 @@ func main() {
 		logger.Fatal(err.Error())
 	}
 
-	db := client.Database(mongoDb)
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		<-stop
+		log.Printf("[WARN] interrupt signal")
+		cancel()
+	}()
 
+	db := client.Database(mongoDb)
 	service := &services.UserService{
 		UserRepository:        repositories.UserRepository{DB: db},
 		DepositRepository:     repositories.DepositRepository{DB: db},
 		TransactionRepository: repositories.TransactionRepository{DB: db},
+		Ticker:                time.NewTicker(10 * time.Second),
 	}
-	service.Run()
+	service.Run(ctx)
 
 	r := router{
 		userHandler:        handlers.NewUserHandler(service),
