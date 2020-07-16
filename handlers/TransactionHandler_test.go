@@ -17,7 +17,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"os/signal"
+	"syscall"
 	"testing"
+	"time"
 )
 
 var srv *httptest.Server
@@ -37,14 +40,23 @@ func TestMain(m *testing.M) {
 		log.Fatal(err.Error())
 	}
 
-	db := client.Database("test_guru")
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		<-stop
+		log.Printf("[WARN] interrupt signal")
+		cancel()
+	}()
 
+	db := client.Database("test_guru")
 	service := &services.UserService{
 		UserRepository:        repositories.UserRepository{DB: db},
 		DepositRepository:     repositories.DepositRepository{DB: db},
 		TransactionRepository: repositories.TransactionRepository{DB: db},
+		Ticker:                time.NewTicker(10 * time.Second),
 	}
-	service.Run()
+	service.Run(ctx)
 
 	userHandler := NewUserHandler(service)
 	transactionHandler := NewTransactionHandler(service)
