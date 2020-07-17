@@ -56,7 +56,7 @@ func TestMain(m *testing.M) {
 		TransactionRepository: repositories.TransactionRepository{DB: db},
 		Ticker:                time.NewTicker(10 * time.Second),
 	}
-	service.Run(ctx)
+
 
 	userHandler := NewUserHandler(service)
 	transactionHandler := NewTransactionHandler(service)
@@ -69,6 +69,8 @@ func TestMain(m *testing.M) {
 	s.HandleFunc("/deposit", userHandler.AddDeposit).Methods(http.MethodPost)
 
 	r.HandleFunc("/transaction", transactionHandler.Transaction).Methods(http.MethodPost)
+
+	service.Run(ctx, r)
 
 	srv = httptest.NewServer(r)
 	defer srv.Close()
