@@ -3,14 +3,11 @@ package services
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 	"guru/models"
 	"guru/repositories"
-	"log"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 )
@@ -29,8 +26,6 @@ func (s *UserService) Run(ctx context.Context, r *mux.Router) {
 	users := make(map[uint64]*models.UserModel)
 	if err := s.UserRepository.FindAll(users); err != nil {
 		zap.L().Fatal(err.Error())
-		log.Println("1")
-		os.Exit(1)
 	}
 	s.Users = users
 
@@ -47,10 +42,17 @@ func (s *UserService) Run(ctx context.Context, r *mux.Router) {
 	s.Statistic = statistic
 
 	server := &http.Server{
-		Addr:    "8080",
+		Addr:    ":8080",
 		Handler: r,
 	}
 	s.startTicker()
+
+	go func() {
+		err := server.ListenAndServe()
+		zap.L().Warn("http server terminated", zap.String("error", err.Error()))
+	}()
+	zap.L().Info("server started")
+
 
 	<-ctx.Done()
 	s.stopTicker()
@@ -61,7 +63,7 @@ func (s *UserService) Run(ctx context.Context, r *mux.Router) {
 	}()
 	zap.L().Info("shutdown initiated")
 	if err := server.Shutdown(ctxShutDown); err != nil {
-		zap.L().Error(fmt.Sprintf("HTTP server Shutdown: %v", err))
+		zap.L().Error("http server shutdown: %v", zap.String("error", err.Error()))
 	}
 	zap.L().Info("shutdown completed")
 }
@@ -223,7 +225,7 @@ func (s *UserService) stopTicker() {
 	if err := s.saveUser(); err != nil {
 		zap.L().Error(err.Error())
 	}
-	log.Print("stop")
+
 }
 
 func (s *UserService) saveUser() error {

@@ -27,12 +27,12 @@ func main() {
 	mode, exists := os.LookupEnv("MODE")
 	if exists && mode == "development" {
 		logger, _ = zap.NewDevelopment()
+
 	}
-	defer func() {
-		if err := logger.Sync(); err != nil {
-			logger.Error(err.Error())
-		}
-	}()
+	defer logger.Sync()
+
+	undo := zap.ReplaceGlobals(logger)
+	defer undo()
 
 	mongoUser, exist := os.LookupEnv("MONGO_INITDB_ROOT_USERNAME")
 	if !exist {
@@ -66,11 +66,13 @@ func main() {
 	clientOpts := options.Client().ApplyURI("mongodb://" + mongoHost + ":" + mongoPort).SetAuth(credential)
 	client, err := mongo.Connect(context.TODO(), clientOpts)
 	if err != nil {
-		log.Fatal(err)
+		zap.L().Fatal(err.Error())
+		os.Exit(1)
 	}
 
 	if err = client.Ping(context.TODO(), nil); err != nil {
-		logger.Fatal(err.Error())
+		zap.L().Fatal(err.Error())
+		os.Exit(1)
 	}
 
 	stop := make(chan os.Signal, 1)
@@ -78,7 +80,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
 		<-stop
-		log.Printf("[WARN] interrupt signal")
+		zap.L().Warn("interrupt signal")
 		cancel()
 	}()
 
