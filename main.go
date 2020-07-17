@@ -10,7 +10,6 @@ import (
 	"guru/repositories"
 	"guru/services"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -90,12 +89,11 @@ func main() {
 		TransactionRepository: repositories.TransactionRepository{DB: db},
 		Ticker:                time.NewTicker(10 * time.Second),
 	}
-	service.Run(ctx)
 
 	r := router{
 		userHandler:        handlers.NewUserHandler(service),
 		transactionHandler: handlers.NewTransactionHandler(service),
 	}
 
-	log.Fatal(http.ListenAndServe(":8080", r.InitRouter()))
+	service.Run(ctx, r.InitRouter())
 }

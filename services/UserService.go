@@ -3,10 +3,13 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
+	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 	"guru/models"
 	"guru/repositories"
 	"log"
+	"net/http"
 	"os"
 	"sync"
 	"time"
@@ -22,7 +25,7 @@ type UserService struct {
 	sync.Mutex
 }
 
-func (s *UserService) Run(ctx context.Context) {
+func (s *UserService) Run(ctx context.Context, r *mux.Router) {
 	users := make(map[uint64]*models.UserModel)
 	if err := s.UserRepository.FindAll(users); err != nil {
 		zap.L().Fatal(err.Error())
@@ -34,24 +37,33 @@ func (s *UserService) Run(ctx context.Context) {
 	statistic := make(map[uint64]*models.StatisticModel)
 	if err := s.DepositRepository.FindAllDeposit(statistic); err != nil {
 		zap.L().Fatal(err.Error())
-		log.Println("a")
-		os.Exit(1)
 	}
 	if err := s.TransactionRepository.FindAllBet(statistic); err != nil {
 		zap.L().Fatal(err.Error())
-		log.Println("b")
-		os.Exit(1)
 	}
 	if err := s.TransactionRepository.FindAllWin(statistic); err != nil {
 		zap.L().Fatal(err.Error())
-		log.Println("c")
-		os.Exit(1)
 	}
 	s.Statistic = statistic
+
+	server := &http.Server{
+		Addr:    "8080",
+		Handler: r,
+	}
 	s.startTicker()
 
 	<-ctx.Done()
 	s.stopTicker()
+
+	ctxShutDown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer func() {
+		cancel()
+	}()
+	zap.L().Info("shutdown initiated")
+	if err := server.Shutdown(ctxShutDown); err != nil {
+		zap.L().Error(fmt.Sprintf("HTTP server Shutdown: %v", err))
+	}
+	zap.L().Info("shutdown completed")
 }
 
 func (s *UserService) GetUser(id uint64, token string) (*models.GetUserResponseModel, error) {
@@ -211,6 +223,7 @@ func (s *UserService) stopTicker() {
 	if err := s.saveUser(); err != nil {
 		zap.L().Error(err.Error())
 	}
+	log.Print("stop")
 }
 
 func (s *UserService) saveUser() error {
